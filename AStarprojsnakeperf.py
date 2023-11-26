@@ -30,7 +30,8 @@ snake_direction = "right"
 score = 0
 high_score = 0
 game_num = 1
-
+avg_score = 0
+sum_score = 0
 # Update the UI
 pygame.init()
 screen = pygame.display.set_mode((GRID_WIDTH, GRID_HEIGHT))
@@ -71,8 +72,6 @@ def move_towards_food(snake, food):
         new_distance = abs(head_x - food[0]) + abs((head_y + UNIT_SIZE) - food[1])
         possible_moves.append(("down", new_distance))
 
-    if (possible_moves == []):
-            return None
     # Sort the possible moves by the sum of distance to food and self-collision avoidance
     possible_moves.sort(key=lambda move: move[1])
 
@@ -93,12 +92,6 @@ while True:
 
     # Calculate the direction to move towards the food
     snake_direction = move_towards_food(snake, food)
-    if (snake_direction is None):
-        print(score)
-        time.sleep(1)
-        snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
-        snake_direction = "right"
-        score = 0
 
     # Update snake position
     if snake_direction == "right":
@@ -132,7 +125,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Check for head collision with the body
@@ -141,7 +136,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Clear the screen
@@ -161,7 +158,8 @@ while True:
     pygame.draw.rect(screen, (255, 0, 0), (food[0], food[1], UNIT_SIZE, UNIT_SIZE))
 
     # Display the score
-    score_text = font.render(f"Game Num: {game_num} Score: {score} High Score: {high_score}", True, (255, 255, 255))
+    font = pygame.font.Font(None, 24)
+    score_text = font.render(f"Game Num: {game_num}  Score: {score}  High Score: {high_score}  Avg Score: {avg_score}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
 
     pygame.display.update()

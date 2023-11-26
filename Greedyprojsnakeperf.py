@@ -18,7 +18,7 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.2
+delay = 0.1
 
 # Create the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
@@ -30,6 +30,8 @@ snake_direction = "right"
 score = 0
 high_score = 0
 game_num = 1
+avg_score = 0
+sum_score = 0
 
 # Update the UI
 pygame.init()
@@ -98,8 +100,11 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
+        
 
     # Check for head collision with the body
     if snake[0] in snake[1:]:
@@ -107,7 +112,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Clear the screen
@@ -127,7 +134,8 @@ while True:
     pygame.draw.rect(screen, (255, 0, 0), (food[0], food[1], UNIT_SIZE, UNIT_SIZE))
 
     # Display the score
-    score_text = font.render(f"Game Num: {game_num} Score: {score} High Score: {high_score}", True, (255, 255, 255))
+    font = pygame.font.Font(None, 24)
+    score_text = font.render(f"Game Num: {game_num}  Score: {score}  High Score: {high_score}  Avg Score: {avg_score}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
 
     pygame.display.update()
