@@ -77,6 +77,8 @@ def move_towards_food(snake, food):
         possible_moves.append(("down", new_distance))
 
     # Sort the possible moves by the sum of distance to food and self-collision avoidance
+    if (possible_moves == []):
+        return None
     possible_moves.sort(key=lambda move: move[1])
 
     # Return the direction of the first move in the sorted list
@@ -95,13 +97,19 @@ while True:
             plt.plot(list(map(int, game_numbers)), list(map(int, scores)))
             plt.xlabel('Game Number')
             plt.ylabel('Score')
-            plt.title('Snake Game Score Plot')
+            plt.title('Snake Game Score Plot A star')
             plt.show()
             exit()
             # exit()
 
     # Calculate the direction to move towards the food
     snake_direction = move_towards_food(snake, food)
+    # if (snake_direction is None):
+    #     print(score)
+    #     time.sleep(1)
+    #     snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
+    #     snake_direction = "right"
+    #     score = 0
     if (snake_direction is None):
         game_numbers.append(game_num)
         scores.append(score)
@@ -109,7 +117,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Update snake position

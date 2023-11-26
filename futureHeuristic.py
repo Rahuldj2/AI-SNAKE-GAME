@@ -32,6 +32,8 @@ snake_direction = "right"
 score = 0
 high_score = 0
 game_num=1
+avg_score = 0
+sum_score = 0
 # Update the UI
 pygame.init()
 screen = pygame.display.set_mode((GRID_WIDTH, GRID_HEIGHT))
@@ -42,9 +44,6 @@ food = random_food(snake)
 
 # Define a function to calculate the direction to move towards the food
 import heapq
-
-# ... (existing code)
-
 # Define a function to calculate the direction to move towards the food
 # Define a function to calculate the direction to move towards the food
 # Define a function to calculate the direction to move towards the food
@@ -115,7 +114,7 @@ while True:
             plt.plot(list(map(int, game_numbers)), list(map(int, scores)))
             plt.xlabel('Game Number')
             plt.ylabel('Score')
-            plt.title('Snake Game Score Plot')
+            plt.title('Snake Game Score Plot A * future heuristic')
             plt.show()
             pygame.quit()
             exit()
@@ -129,7 +128,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
 
@@ -168,7 +169,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Check for head collision with the body
@@ -180,7 +183,9 @@ while True:
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
+        sum_score += score
         score = 0
+        avg_score = sum_score/game_num
         game_num += 1
 
     # Clear the screen
@@ -201,9 +206,12 @@ while True:
 
     # Display the score
     # score_text = font.render(f"Score: {score} High Score: {high_score}", True, (255, 255, 255))
-    score_text = font.render(f"Game Num: {game_num} Score: {score} High Score: {high_score}", True, (255, 255, 255))
-    screen.blit(score_text, (10, 10))
+    # score_text = font.render(f"Game Num: {game_num} Score: {score} High Score: {high_score}", True, (255, 255, 255))
+    # screen.blit(score_text, (10, 10))
 
+    font = pygame.font.Font(None, 24)
+    score_text = font.render(f"Game Num: {game_num}  Score: {score}  High Score: {high_score}  Avg Score: {avg_score}", True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
     pygame.display.update()
 
     # Delay for smooth movement
