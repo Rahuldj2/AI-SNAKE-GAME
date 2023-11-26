@@ -18,7 +18,7 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.1
+delay = 0.01
 
 # Create the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]

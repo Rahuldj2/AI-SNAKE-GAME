@@ -1,6 +1,8 @@
 import time
 import random
 import pygame
+import matplotlib.pyplot as plt
+
 
 # Define the grid size
 GRID_SIZE = 15
@@ -10,6 +12,10 @@ GRID_HEIGHT = 450  # Adjusted for 15x15 grid
 # Calculate the unit size based on the grid size
 UNIT_SIZE = GRID_WIDTH // GRID_SIZE
 
+game_numbers = []
+scores = []
+
+
 # Set the initial food placement
 def random_food(snake):
     while True:
@@ -18,7 +24,7 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.1
+delay = 0.0001
 
 # Create the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
@@ -63,6 +69,11 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            plt.plot(list(map(int, game_numbers)), list(map(int, scores)))
+            plt.xlabel('Game Number')
+            plt.ylabel('Score')
+            plt.title('Snake Game Score Plot')
+            plt.show()
             exit()
 
     # Calculate the direction to move towards the food
@@ -97,6 +108,8 @@ while True:
         or snake[0][1] >= GRID_HEIGHT
     ):
         # Reset the game
+        game_numbers.append(game_num)
+        scores.append(score)
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
@@ -109,6 +122,8 @@ while True:
     # Check for head collision with the body
     if snake[0] in snake[1:]:
         # Reset the game
+        game_numbers.append(game_num)
+        scores.append(score)
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"

@@ -1,6 +1,7 @@
 import time
 import random
 import pygame
+import matplotlib.pyplot as plt
 
 # Define the grid size
 GRID_SIZE = 15
@@ -9,7 +10,8 @@ GRID_HEIGHT = 450  # Adjusted for 15x15 grid
 
 # Calculate the unit size based on the grid size
 UNIT_SIZE = GRID_WIDTH // GRID_SIZE
-
+game_numbers = []
+scores = []
 # Set the initial food placement
 def random_food(snake):
     while True:
@@ -18,7 +20,7 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.1
+delay = 0.001
 
 # Create the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
@@ -29,7 +31,7 @@ snake_direction = "right"
 # Score
 score = 0
 high_score = 0
-
+game_num=1
 # Update the UI
 pygame.init()
 screen = pygame.display.set_mode((GRID_WIDTH, GRID_HEIGHT))
@@ -110,17 +112,25 @@ font = pygame.font.Font(None, 36)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            plt.plot(list(map(int, game_numbers)), list(map(int, scores)))
+            plt.xlabel('Game Number')
+            plt.ylabel('Score')
+            plt.title('Snake Game Score Plot')
+            plt.show()
             pygame.quit()
             exit()
 
     # Calculate the direction to move towards the food
     snake_direction = move_towards_food(snake, food)
     if (snake_direction is None):
+        game_numbers.append(game_num)
+        scores.append(score)
         print(score)
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
         score = 0
+        game_num += 1
 
 
     # Update snake position
@@ -152,20 +162,26 @@ while True:
         or snake[0][1] >= GRID_HEIGHT
     ):
         # Reset the game
+        game_numbers.append(game_num)
+        scores.append(score)
         print(score)
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
         score = 0
+        game_num += 1
 
     # Check for head collision with the body
     if snake[0] in snake[1:]:
+        game_numbers.append(game_num)
+        scores.append(score)
         print(score)
         # Reset the game
         time.sleep(1)
         snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
         snake_direction = "right"
         score = 0
+        game_num += 1
 
     # Clear the screen
     screen.fill((0, 0, 0))
@@ -184,7 +200,8 @@ while True:
     pygame.draw.rect(screen, (255, 0, 0), (food[0], food[1], UNIT_SIZE, UNIT_SIZE))
 
     # Display the score
-    score_text = font.render(f"Score: {score} High Score: {high_score}", True, (255, 255, 255))
+    # score_text = font.render(f"Score: {score} High Score: {high_score}", True, (255, 255, 255))
+    score_text = font.render(f"Game Num: {game_num} Score: {score} High Score: {high_score}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
 
     pygame.display.update()
