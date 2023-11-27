@@ -8,11 +8,16 @@ pygame.init()
 # font = pygame.font.Font('arial.ttf', 25)
 font = pygame.font.Font(None, 24)
 
-class Direction(Enum):
-    RIGHT = 1
-    LEFT = 2
-    UP = 3
-    DOWN = 4
+
+#RIGHT EAST
+#LEFT WEST
+#UP NORTH
+#DOWN SOUTH
+class Orientation(Enum):
+    EAST = 1
+    WEST = 2
+    NORTH = 3
+    SOUTH = 4
     
 #This object will keep track of coordinates of the snake and the food particle
 Coordinate_obj = namedtuple('Coordinate_obj', 'x, y')
@@ -44,7 +49,7 @@ class SnakeReinforce:
     
     #this function resets the game in case the snake collides with corner or with itself
     def reset(self):
-        self.direction = Direction.RIGHT
+        self.orientation = Orientation.EAST
         self.head = Coordinate_obj(self.w // 2, self.h // 2)
         self.snake = [
             self.head,
@@ -58,6 +63,15 @@ class SnakeReinforce:
         self.LoopCheck = 0
         self.avg_score = self.sum_score/self.game_num
         self.game_num += 1
+
+    def get_collision_bool(self, pt=None):
+        if pt is None:
+            pt = self.head
+        if pt.x >= self.w or pt.x < 0 or pt.y >= self.h or pt.y < 0:
+            return True
+        if pt in self.snake[1:]:
+            return True
+        return False
 
     #this function places the food in a random location
     def _randomly_put_food(self):
@@ -74,7 +88,7 @@ class SnakeReinforce:
                 pygame.quit()
                 quit()
 
-        self._move(action)
+        self._direct_snake(action)
         self.snake.insert(0, self.head)
 
         reward = 0
@@ -98,15 +112,6 @@ class SnakeReinforce:
         self.clock.tick(GAME_FRAME_RATE)
         return reward, game_over, self.score
     
-    def get_collision_bool(self, pt=None):
-        if pt is None:
-            pt = self.head
-        if pt.x >= self.w or pt.x < 0 or pt.y >= self.h or pt.y < 0:
-            return True
-        if pt in self.snake[1:]:
-            return True
-        return False
-    
     def _refresh_user_interface(self):
         self.display.fill((0, 0, 0))
         
@@ -127,27 +132,27 @@ class SnakeReinforce:
         self.display.blit(text, [0, 0])
         pygame.display.flip()
     
-    def _move(self, action):
-        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
-        idx = clock_wise.index(self.direction)
+    def _direct_snake(self, action):
+        playable_moves = [Orientation.EAST, Orientation.SOUTH, Orientation.WEST, Orientation.NORTH]
+        ind = playable_moves.index(self.orientation)
         if np.array_equal(action, [1, 0, 0]):
-            new_dir = clock_wise[idx]  # No change
+            new_dir = playable_moves[ind]  # No change
         elif np.array_equal(action, [0, 1, 0]):
-            next_idx = (idx + 1) % 4
-            new_dir = clock_wise[next_idx]  # Right turn R -> D -> L -> U
+            next_ind = (ind + 1) % 4
+            new_dir = playable_moves[next_ind]  # Right turn R -> D -> L -> U
         else:  # [0, 0, 1]
-            next_idx = (idx - 1) % 4
-            new_dir = clock_wise[next_idx]  # Left turn R -> U -> L -> D
-        self.direction = new_dir
+            next_ind = (ind - 1) % 4
+            new_dir = playable_moves[next_ind]  # Left turn R -> U -> L -> D
+        self.orientation = new_dir
         x = self.head.x
         y = self.head.y
-        if self.direction == Direction.RIGHT:
+        if self.orientation == Orientation.EAST:
             x += UNIT_SQUARE_SIZE
-        elif self.direction == Direction.LEFT:
+        elif self.orientation == Orientation.WEST:
             x -= UNIT_SQUARE_SIZE
-        elif self.direction == Direction.DOWN:
+        elif self.orientation == Orientation.SOUTH:
             y += UNIT_SQUARE_SIZE
-        elif self.direction == Direction.UP:
+        elif self.orientation == Orientation.NORTH:
             y -= UNIT_SQUARE_SIZE
 
         # Align the head position to the grid

@@ -4,7 +4,7 @@ import numpy as np
 from ytQRF import SnakeReinforce
 from collections import deque
 from ytQRF import Coordinate_obj
-from ytQRF import Direction
+from ytQRF import Orientation
 from model import Linear_QNet, QTrainer
 
 from helper import plot
@@ -24,41 +24,41 @@ class Agent:
 
     def get_state(self, game):
         head = game.snake[0]#grab the head from the snake
-        point_l = Coordinate_obj(head.x - 30, head.y)
-        point_r = Coordinate_obj(head.x + 30, head.y)
-        point_u = Coordinate_obj(head.x, head.y - 30)
-        point_d = Coordinate_obj(head.x, head.y + 30)
+        coordinate_point_l = Coordinate_obj(head.x - 30, head.y)
+        coordinate_point_r = Coordinate_obj(head.x + 30, head.y)
+        coordinate_point_u = Coordinate_obj(head.x, head.y - 30)
+        coordinate_point_d = Coordinate_obj(head.x, head.y + 30)
 
-        dir_l = game.direction == Direction.LEFT
-        dir_r = game.direction == Direction.RIGHT
-        dir_u = game.direction == Direction.UP
-        dir_d = game.direction == Direction.DOWN
+        direction_l = game.orientation == Orientation.WEST#left
+        direction_r = game.orientation == Orientation.EAST#right
+        direction_u = game.orientation == Orientation.NORTH#up
+        direction_d = game.orientation == Orientation.SOUTH#down
 
         #total 11 states
         state = [
             # Danger straight
-            (dir_r and game.get_collision_bool(point_r)) or
-            (dir_l and game.get_collision_bool(point_l)) or
-            (dir_u and game.get_collision_bool(point_u)) or
-            (dir_d and game.get_collision_bool(point_d)),
+            (direction_r and game.get_collision_bool(coordinate_point_r)) or
+            (direction_l and game.get_collision_bool(coordinate_point_l)) or
+            (direction_u and game.get_collision_bool(coordinate_point_u)) or
+            (direction_d and game.get_collision_bool(coordinate_point_d)),
 
             # Danger right
-            (dir_u and game.get_collision_bool(point_r)) or
-            (dir_d and game.get_collision_bool(point_l)) or
-            (dir_l and game.get_collision_bool(point_u)) or
-            (dir_r and game.get_collision_bool(point_d)),
+            (direction_u and game.get_collision_bool(coordinate_point_r)) or
+            (direction_d and game.get_collision_bool(coordinate_point_l)) or
+            (direction_l and game.get_collision_bool(coordinate_point_u)) or
+            (direction_r and game.get_collision_bool(coordinate_point_d)),
 
             # Danger left
-            (dir_d and game.get_collision_bool(point_r)) or
-            (dir_u and game.get_collision_bool(point_l)) or
-            (dir_r and game.get_collision_bool(point_u)) or
-            (dir_l and game.get_collision_bool(point_d)),
+            (direction_d and game.get_collision_bool(coordinate_point_r)) or
+            (direction_u and game.get_collision_bool(coordinate_point_l)) or
+            (direction_r and game.get_collision_bool(coordinate_point_u)) or
+            (direction_l and game.get_collision_bool(coordinate_point_d)),
 
-            # Move direction
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
+            # Move orientation
+            direction_l,
+            direction_r,
+            direction_u,
+            direction_d,
 
             # Food location
             game.food.x < game.head.x,  # food left
