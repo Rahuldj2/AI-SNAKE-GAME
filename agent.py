@@ -8,22 +8,22 @@ from ytQRF import Orientation
 from model import Linear_QNet, QTrainer
 
 from helper import plot
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
-LR = 0.001 
+MAX_ALLOWED_SIZE = 100_000
+MEM_SAMPLE_SIZE = 1000
+LEARNING_RATE = 0.001 
 
 class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0  # randomness
-        self.gamma = 0.9  # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY)
+        self.discount_rate_gamma_factor = 0.9  # discount rate
+        self.memory = deque(maxlen=MAX_ALLOWED_SIZE)
         self.model = Linear_QNet(11, 256, 3)#state has11 values
-        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
+        self.trainer = QTrainer(self.model, lr=LEARNING_RATE, discount_rate_gamma_factor=self.discount_rate_gamma_factor)
 
 
-    def get_state(self, game):
-        head = game.snake[0]#grab the head from the snake
+    def retrieve_snake_state(self, game):
+        head = game.snake[0]
         coordinate_point_l = Coordinate_obj(head.x - 30, head.y)
         coordinate_point_r = Coordinate_obj(head.x + 30, head.y)
         coordinate_point_u = Coordinate_obj(head.x, head.y - 30)
@@ -68,28 +68,28 @@ class Agent:
         ]
         return np.array(state, dtype=int)
 
-    def remember(self, state, action, reward, next_state, done):
+    def memorize(self, state, action, reward, next_state, done):
         #store the state, action, reward, next_state, done in memory
         self.memory.append((state, action, reward, next_state, done))   
 
     
-    def train_long_memory(self):
-        if (len(self.memory)) > BATCH_SIZE:
+    def hone_retro_mind(self):
+        if (len(self.memory)) > MEM_SAMPLE_SIZE:
             #randomly sample from memory
-            mini_sample = random.sample(self.memory, BATCH_SIZE)
+            snake_reward_memory = random.sample(self.memory, MEM_SAMPLE_SIZE)
         else:
-            mini_sample = self.memory
+            snake_reward_memory = self.memory
         
-        states, actions, rewards, next_states, dones = zip(*mini_sample)
-        self.trainer.train_step(states, actions, rewards, next_states, dones)
-        # for state, action, reward, next_state, done in mini_sample:
-        #     self.train_short_memory(state, action, reward, next_state, done)
+        states, actions, rewards, next_states, dones = zip(*snake_reward_memory)
+        self.trainer.train_using_Q(states, actions, rewards, next_states, dones)
+        # for state, action, reward, next_state, done in snake_reward_memory:
+        #     self.hone_antero_mind(state, action, reward, next_state, done)
 
-    def train_short_memory(self, state, action, reward, next_state, done):
-        self.trainer.train_step(state, action, reward, next_state, done)
+    def hone_antero_mind(self, state, action, reward, next_state, done):
+        self.trainer.train_using_Q(state, action, reward, next_state, done)
 
 
-    def get_action(self, state):
+    def retrieve_snake_action(self, state):
         #random moves: tradeoff exploration / exploitation  
         self.epsilon = 80 - self.n_games
         final_move = [0,0,0]
@@ -105,37 +105,37 @@ class Agent:
         return final_move
     
 
-def train():
+def enhance_snake():
     plot_scores = []
     plot_mean_scores = []
     total_score = 0
-    record = 0
+    high_score_till_now = 0
     agent = Agent()
     game = SnakeReinforce()
     while True:
-        state_old = agent.get_state(game)
-        final_move=agent.get_action(state_old)
+        state_old = agent.retrieve_snake_state(game)
+        final_move=agent.retrieve_snake_action(state_old)
 
         # perform new move and get new state
         reward, done, score = game.snake_play(final_move)
-        state_new = agent.get_state(game)
+        state_new = agent.retrieve_snake_state(game)
 
         # train short memory
-        agent.train_short_memory(state_old, final_move, reward, state_new, done)
+        agent.hone_antero_mind(state_old, final_move, reward, state_new, done)
 
-        # remember
-        agent.remember(state_old, final_move, reward, state_new, done)
+        # memorize
+        agent.memorize(state_old, final_move, reward, state_new, done)
 
         if done:
             # train long memory, plot result
             game.reset()
             agent.n_games += 1
-            agent.train_long_memory()
+            agent.hone_retro_mind()
 
-            if score > record:
-                record = score
+            if score > high_score_till_now:
+                high_score_till_now = score
                 #agent.model.save()
-            print('Game', agent.n_games, 'Score', score, 'Record:', record)
+            print('Game', agent.n_games, 'Score', score, 'Record:', high_score_till_now)
 
             plot_scores.append(score)
             total_score += score
@@ -144,4 +144,4 @@ def train():
             plot(plot_scores, plot_mean_scores)
 
 if __name__ == '__main__':
-    train()
+    enhance_snake()
