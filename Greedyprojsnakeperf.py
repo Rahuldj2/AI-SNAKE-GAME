@@ -1,10 +1,19 @@
+
 import time
 import random
 import pygame
 import matplotlib.pyplot as plt
+"""
+This file implements the Snake Game using a greedy best-first search algorithm to move the snake towards the food.
+The snake's movement is determined by calculating the direction that leads to the shortest path towards the food,
+ignoring collisions with itself. The game is played on a grid of size 15x15, and the snake's initial position is at
+(7, 7). The game keeps track of the score, high score, average score, and the number of games played. The snake
+grows by eating the food, and the game ends if the snake collides with the border or itself. The game is displayed
+using the Pygame library, and the score plot is generated using the Matplotlib library.
+"""
 
 
-# Define the grid size
+# Defining the grid size 15x15
 GRID_SIZE = 15
 GRID_WIDTH = 450  # Adjusted for 15x15 grid
 GRID_HEIGHT = 450  # Adjusted for 15x15 grid
@@ -24,9 +33,9 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.0001
+delay = 0.1
 
-# Create the snake as a list of coordinates
+# Creating the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
 
 # Initialize the snake direction
@@ -39,7 +48,6 @@ game_num = 1
 avg_score = 0
 sum_score = 0
 
-# Update the UI
 pygame.init()
 screen = pygame.display.set_mode((GRID_WIDTH, GRID_HEIGHT))
 pygame.display.set_caption("Snake Game")
@@ -48,6 +56,7 @@ pygame.display.set_caption("Snake Game")
 food = random_food(snake)
 
 # Define a function to calculate the direction to move towards the food
+#This follows a greedy approach and takes shortest path towards food ignoring collisions with self
 def move_towards_food(snake, food):
     head_x, head_y = snake[0]
     food_x, food_y = food
@@ -64,7 +73,6 @@ def move_towards_food(snake, food):
 # Font for the score display
 font = pygame.font.Font(None, 36)
 
-# Main game loop
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -100,7 +108,7 @@ while True:
     else:
         snake.pop()
 
-    # Check for a collision with the border
+    # collision with the border
     if (
         snake[0][0] < 0
         or snake[0][0] >= GRID_WIDTH
@@ -155,5 +163,4 @@ while True:
 
     pygame.display.update()
 
-    # Delay for smooth movement
     time.sleep(delay)

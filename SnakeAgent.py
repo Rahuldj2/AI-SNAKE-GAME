@@ -1,11 +1,13 @@
 import torch
 import random
 import numpy as np
-from ytQRF import SnakeReinforce
+from SnakeQlearning import SnakeReinforce
 from collections import deque
-from ytQRF import Coordinate_obj
-from ytQRF import Orientation
-from model import Linear_QNet, QTrainer
+from SnakeQlearning import Coordinate_obj
+from SnakeQlearning import Orientation
+from model import Reinforcement_QNetwork, QValueIterTrainer
+import matplotlib.pyplot as plt
+
 
 from helper import plot
 MAX_ALLOWED_SIZE = 100_000
@@ -18,8 +20,8 @@ class Agent:
         self.epsilon = 0  # randomness
         self.discount_rate_gamma_factor = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_ALLOWED_SIZE)
-        self.model = Linear_QNet(11, 256, 3)#state has11 values
-        self.trainer = QTrainer(self.model, lr=LEARNING_RATE, discount_rate_gamma_factor=self.discount_rate_gamma_factor)
+        self.model = Reinforcement_QNetwork(11, 256, 3)#state has11 values
+        self.trainer = QValueIterTrainer(self.model, lr=LEARNING_RATE, discount_rate_gamma_factor=self.discount_rate_gamma_factor)
 
 
     def retrieve_snake_state(self, game):
@@ -110,6 +112,8 @@ def enhance_snake():
     plot_mean_scores = []
     total_score = 0
     high_score_till_now = 0
+    avg_scores_after_100 = [] 
+    total_after_100=0
     agent = Agent()
     game = SnakeReinforce()
     while True:
@@ -142,6 +146,21 @@ def enhance_snake():
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
             plot(plot_scores, plot_mean_scores)
+            if agent.n_games >=100:
+                total_after_100+=1
+                avg_score_after_100 = total_score / total_after_100
+                avg_scores_after_100.append(avg_score_after_100)
+                total_score = 0
+                # Plot new graph with fresh data after every 100 games
+                plt.plot(avg_scores_after_100)
+                plt.xlabel('Games')
+                plt.ylabel('Average Score')
+                plt.title('Average Score After Every 100 Games')
+                if (agent.n_games==200):
+                    plt.savefig(f'average_score_after_{agent.n_games}_games.png')
+                
+                # plt.show()
+                plt.show()
 
 if __name__ == '__main__':
     enhance_snake()

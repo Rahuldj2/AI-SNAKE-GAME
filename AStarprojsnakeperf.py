@@ -1,7 +1,16 @@
 import time
 import random
 import pygame
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # Importing matplotlib for plotting
+
+"""
+# A* algorithm has been used in this code to improve the snake game.
+# It is used to calculate the direction for the snake to move towards the food.
+# The algorithm calculates the distance to the food using the Manhattan distance,
+# and then evaluates the possible moves based on the distance and self-collision avoidance.
+# The best move is determined using A* algorithm and the snake is directed accordingly.
+# This improves the gameplay and makes the snake more intelligent in finding the food.
+"""
 
 
 # Define the grid size
@@ -22,7 +31,7 @@ def random_food(snake):
         if (x, y) not in snake:
             return (x, y)
 
-delay = 0.001
+delay = 0.1
 
 # Create the snake as a list of coordinates
 snake = [(UNIT_SIZE * 7, UNIT_SIZE * 7)]
@@ -52,7 +61,7 @@ def move_towards_food(snake, food):
     # Calculate the distance to the food using the Manhattan distance (sum of horizontal and vertical distances)
     distance_to_food = abs(head_x - food[0]) + abs(head_y - food[1])
 
-    # Create a list of possible moves
+    # Creates a list of possible moves
     possible_moves = []
 
     # Check if moving right is a valid move

@@ -3,10 +3,13 @@ import random
 from enum import Enum
 from collections import namedtuple
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 pygame.init()
 # font = pygame.font.Font('arial.ttf', 25)
 font = pygame.font.Font(None, 24)
+
 
 
 #RIGHT EAST
@@ -45,6 +48,10 @@ class SnakeReinforce:
         self.high_score=0
         self.sum_score=0
         self.score=0
+        self.game_numbers = []
+        self.scores = []
+        self.avgAfter100=0
+        self.sumAfter100=0
         self.reset()
     
     #this function resets the game in case the snake collides with corner or with itself
@@ -87,7 +94,6 @@ class SnakeReinforce:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-
         self._direct_snake(action)
         self.snake.insert(0, self.head)
 

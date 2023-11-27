@@ -3,6 +3,19 @@ import random
 import pygame
 import matplotlib.pyplot as plt
 
+"""
+# A* algorithm with future planning has been used in this code to improve the snake game.
+# It is used to calculate the direction for the snake to move towards the food.
+The future_snake part in the code is an improvement over the A* algorithm because it considers
+potential future collisions with itself. By simulating the snake's movement and checking if the move 
+would lead to a collision with itself in subsequent iterations, it avoids making moves that would 
+result in the snake trapping itself.
+
+This approach takes into account the snake's current position, the potential future score increase, and
+the distance to the food. It calculates a weighted distance for each possible move, where the weight is
+determined by the sum of the Manhattan distance to the food and the future score increase.
+"""
+
 # Define the grid size
 GRID_SIZE = 15
 GRID_WIDTH = 450  # Adjusted for 15x15 grid
