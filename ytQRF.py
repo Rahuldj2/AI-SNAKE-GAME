@@ -14,30 +14,25 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
     
-Point = namedtuple('Point', 'x, y')
-
-WHITE = (255, 255, 255)
-RED = (200, 0, 0)
-BLUE1 = (0, 0, 255)
-BLUE2 = (0, 100, 255)
-BLACK = (0, 0, 0)
+#This object will keep track of coordinates of the snake and the food particle
+Coordinate_obj = namedtuple('Coordinate_obj', 'x, y')
 
 GRID_SIZE = 15
-BLOCK_SIZE = 30  # Increased block size for better visibility
-SPEED = 20
+UNIT_SQUARE_SIZE = 30  # Increased block size for better visibility
+GAME_FRAME_RATE = 20
 
 high_score = 0
 game_num = 1
 avg_score = 0
 sum_score = 0
 
-class SnakeGameAI:
-    
-    def __init__(self, w=GRID_SIZE * BLOCK_SIZE, h=GRID_SIZE * BLOCK_SIZE):
+class SnakeReinforce:
+    #cool working
+    def __init__(self, w=GRID_SIZE * UNIT_SQUARE_SIZE, h=GRID_SIZE * UNIT_SQUARE_SIZE):
+        pygame.display.set_caption('Snake Game Q learning')
         self.w = w
         self.h = h
         self.display = pygame.display.set_mode((self.w, self.h))
-        pygame.display.set_caption('Snake Game Q learning')
         self.clock = pygame.time.Clock()
         self.game_num=1
         self.avg_score=0
@@ -50,30 +45,30 @@ class SnakeGameAI:
     #this function resets the game in case the snake collides with corner or with itself
     def reset(self):
         self.direction = Direction.RIGHT
-        self.head = Point(self.w // 2, self.h // 2)
+        self.head = Coordinate_obj(self.w // 2, self.h // 2)
         self.snake = [
             self.head,
-            Point(self.head.x - BLOCK_SIZE, self.head.y),
-            Point(self.head.x - (2 * BLOCK_SIZE), self.head.y)
+            Coordinate_obj(self.head.x - UNIT_SQUARE_SIZE, self.head.y),
+            Coordinate_obj(self.head.x - (2 * UNIT_SQUARE_SIZE), self.head.y)
         ]
         self.sum_score += self.score
         self.score = 0
         self.food = None
-        self._place_food()
-        self.frame_iteration = 0
+        self._randomly_put_food()
+        self.LoopCheck = 0
         self.avg_score = self.sum_score/self.game_num
         self.game_num += 1
 
     #this function places the food in a random location
-    def _place_food(self):
-        x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
-        y = random.randint(0, (self.h - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
-        self.food = Point(x, y)
+    def _randomly_put_food(self):
+        x = random.randint(0, (self.w - UNIT_SQUARE_SIZE) // UNIT_SQUARE_SIZE) * UNIT_SQUARE_SIZE
+        y = random.randint(0, (self.h - UNIT_SQUARE_SIZE) // UNIT_SQUARE_SIZE) * UNIT_SQUARE_SIZE
+        self.food = Coordinate_obj(x, y)
         if self.food in self.snake:
-            self._place_food()
+            self._randomly_put_food()
         
-    def play_step(self, action):
-        self.frame_iteration += 1
+    def snake_play(self, action):
+        self.LoopCheck += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -84,7 +79,7 @@ class SnakeGameAI:
 
         reward = 0
         game_over = False
-        if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
+        if self.get_collision_bool() or self.LoopCheck > 100 * len(self.snake):
             game_over = True
             reward = -10
             return reward, game_over, self.score
@@ -95,15 +90,15 @@ class SnakeGameAI:
             if self.score > self.high_score:
                 self.high_score = self.score
             reward = 10
-            self._place_food()
+            self._randomly_put_food()
         else:
             self.snake.pop()
 
-        self._update_ui()
-        self.clock.tick(SPEED)
+        self._refresh_user_interface()
+        self.clock.tick(GAME_FRAME_RATE)
         return reward, game_over, self.score
     
-    def is_collision(self, pt=None):
+    def get_collision_bool(self, pt=None):
         if pt is None:
             pt = self.head
         if pt.x >= self.w or pt.x < 0 or pt.y >= self.h or pt.y < 0:
@@ -112,19 +107,19 @@ class SnakeGameAI:
             return True
         return False
     
-    def _update_ui(self):
-        self.display.fill(BLACK)
+    def _refresh_user_interface(self):
+        self.display.fill((0, 0, 0))
         
-        for pt in self.snake:
-            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(pt.x + 4, pt.y + 4, 12, 12))
+        for coordinate_point in self.snake:
+            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(coordinate_point.x, coordinate_point.y, UNIT_SQUARE_SIZE, UNIT_SQUARE_SIZE))
+            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(coordinate_point.x + 4, coordinate_point.y + 4, 12, 12))
         
-        pygame.draw.rect(self.display, RED, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
+        pygame.draw.rect(self.display, (200,0,0), pygame.Rect(self.food.x, self.food.y, UNIT_SQUARE_SIZE, UNIT_SQUARE_SIZE))
         
         # Draw grid lines
-        for i in range(0, self.w, BLOCK_SIZE):
+        for i in range(0, self.w, UNIT_SQUARE_SIZE):
             pygame.draw.line(self.display, (64, 64, 64), (i, 0), (i, self.h))
-        for j in range(0, self.h, BLOCK_SIZE):
+        for j in range(0, self.h, UNIT_SQUARE_SIZE):
             pygame.draw.line(self.display, (64, 64, 64), (0, j), (self.w, j))
 
         # text = font.render("Score: " + str(self.score), True, WHITE)
@@ -147,18 +142,18 @@ class SnakeGameAI:
         x = self.head.x
         y = self.head.y
         if self.direction == Direction.RIGHT:
-            x += BLOCK_SIZE
+            x += UNIT_SQUARE_SIZE
         elif self.direction == Direction.LEFT:
-            x -= BLOCK_SIZE
+            x -= UNIT_SQUARE_SIZE
         elif self.direction == Direction.DOWN:
-            y += BLOCK_SIZE
+            y += UNIT_SQUARE_SIZE
         elif self.direction == Direction.UP:
-            y -= BLOCK_SIZE
+            y -= UNIT_SQUARE_SIZE
 
         # Align the head position to the grid
-        x = (x // BLOCK_SIZE) * BLOCK_SIZE
-        y = (y // BLOCK_SIZE) * BLOCK_SIZE
+        x = (x // UNIT_SQUARE_SIZE) * UNIT_SQUARE_SIZE
+        y = (y // UNIT_SQUARE_SIZE) * UNIT_SQUARE_SIZE
             
-        self.head = Point(x, y)
+        self.head = Coordinate_obj(x, y)
 
-# Example of using the modified SnakeGameAI class
+# Example of using the modified SnakeReinforce class

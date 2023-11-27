@@ -50,7 +50,7 @@ class SnakeGameAI:
         self.score = 0
         self.food = None
         self._place_food()
-        self.frame_iteration = 0
+        self.LoopCheck = 0
 
         
     def _place_food(self):
@@ -61,7 +61,7 @@ class SnakeGameAI:
             self._place_food()
         
     def play_step(self,action):
-        self.frame_iteration += 1
+        self.LoopCheck += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -75,7 +75,7 @@ class SnakeGameAI:
         # 3. check if game over
         reward=0
         game_over = False
-        if self.is_collision() or self.frame_iteration>100*len(self.snake):
+        if self.is_collision() or self.LoopCheck>100*len(self.snake):
             game_over = True
             reward=-10
             return reward,game_over, self.score

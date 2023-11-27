@@ -1,9 +1,9 @@
 import torch
 import random
 import numpy as np
-from ytQRF import SnakeGameAI
+from ytQRF import SnakeReinforce
 from collections import deque
-from ytQRF import Point
+from ytQRF import Coordinate_obj
 from ytQRF import Direction
 from model import Linear_QNet, QTrainer
 
@@ -24,10 +24,10 @@ class Agent:
 
     def get_state(self, game):
         head = game.snake[0]#grab the head from the snake
-        point_l = Point(head.x - 30, head.y)
-        point_r = Point(head.x + 30, head.y)
-        point_u = Point(head.x, head.y - 30)
-        point_d = Point(head.x, head.y + 30)
+        point_l = Coordinate_obj(head.x - 30, head.y)
+        point_r = Coordinate_obj(head.x + 30, head.y)
+        point_u = Coordinate_obj(head.x, head.y - 30)
+        point_d = Coordinate_obj(head.x, head.y + 30)
 
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
@@ -37,22 +37,22 @@ class Agent:
         #total 11 states
         state = [
             # Danger straight
-            (dir_r and game.is_collision(point_r)) or
-            (dir_l and game.is_collision(point_l)) or
-            (dir_u and game.is_collision(point_u)) or
-            (dir_d and game.is_collision(point_d)),
+            (dir_r and game.get_collision_bool(point_r)) or
+            (dir_l and game.get_collision_bool(point_l)) or
+            (dir_u and game.get_collision_bool(point_u)) or
+            (dir_d and game.get_collision_bool(point_d)),
 
             # Danger right
-            (dir_u and game.is_collision(point_r)) or
-            (dir_d and game.is_collision(point_l)) or
-            (dir_l and game.is_collision(point_u)) or
-            (dir_r and game.is_collision(point_d)),
+            (dir_u and game.get_collision_bool(point_r)) or
+            (dir_d and game.get_collision_bool(point_l)) or
+            (dir_l and game.get_collision_bool(point_u)) or
+            (dir_r and game.get_collision_bool(point_d)),
 
             # Danger left
-            (dir_d and game.is_collision(point_r)) or
-            (dir_u and game.is_collision(point_l)) or
-            (dir_r and game.is_collision(point_u)) or
-            (dir_l and game.is_collision(point_d)),
+            (dir_d and game.get_collision_bool(point_r)) or
+            (dir_u and game.get_collision_bool(point_l)) or
+            (dir_r and game.get_collision_bool(point_u)) or
+            (dir_l and game.get_collision_bool(point_d)),
 
             # Move direction
             dir_l,
@@ -111,13 +111,13 @@ def train():
     total_score = 0
     record = 0
     agent = Agent()
-    game = SnakeGameAI()
+    game = SnakeReinforce()
     while True:
         state_old = agent.get_state(game)
         final_move=agent.get_action(state_old)
 
         # perform new move and get new state
-        reward, done, score = game.play_step(final_move)
+        reward, done, score = game.snake_play(final_move)
         state_new = agent.get_state(game)
 
         # train short memory
