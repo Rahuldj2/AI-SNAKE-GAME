@@ -5,7 +5,8 @@ from collections import namedtuple
 import numpy as np
 
 pygame.init()
-font = pygame.font.Font('arial.ttf', 25)
+# font = pygame.font.Font('arial.ttf', 25)
+font = pygame.font.Font(None, 24)
 
 class Direction(Enum):
     RIGHT = 1
@@ -25,16 +26,28 @@ GRID_SIZE = 15
 BLOCK_SIZE = 30  # Increased block size for better visibility
 SPEED = 20
 
+high_score = 0
+game_num = 1
+avg_score = 0
+sum_score = 0
+
 class SnakeGameAI:
     
     def __init__(self, w=GRID_SIZE * BLOCK_SIZE, h=GRID_SIZE * BLOCK_SIZE):
         self.w = w
         self.h = h
         self.display = pygame.display.set_mode((self.w, self.h))
-        pygame.display.set_caption('Snake')
+        pygame.display.set_caption('Snake Game Q learning')
         self.clock = pygame.time.Clock()
+        self.game_num=1
+        self.avg_score=0
+        self.sum_score=0
+        self.high_score=0
+        self.sum_score=0
+        self.score=0
         self.reset()
     
+    #this function resets the game in case the snake collides with corner or with itself
     def reset(self):
         self.direction = Direction.RIGHT
         self.head = Point(self.w // 2, self.h // 2)
@@ -43,11 +56,15 @@ class SnakeGameAI:
             Point(self.head.x - BLOCK_SIZE, self.head.y),
             Point(self.head.x - (2 * BLOCK_SIZE), self.head.y)
         ]
+        self.sum_score += self.score
         self.score = 0
         self.food = None
         self._place_food()
         self.frame_iteration = 0
+        self.avg_score = self.sum_score/self.game_num
+        self.game_num += 1
 
+    #this function places the food in a random location
     def _place_food(self):
         x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
         y = random.randint(0, (self.h - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
@@ -72,8 +89,11 @@ class SnakeGameAI:
             reward = -10
             return reward, game_over, self.score
 
+        #means the snake has eaten food
         if self.head == self.food:
             self.score += 1
+            if self.score > self.high_score:
+                self.high_score = self.score
             reward = 10
             self._place_food()
         else:
@@ -96,18 +116,19 @@ class SnakeGameAI:
         self.display.fill(BLACK)
         
         for pt in self.snake:
-            pygame.draw.rect(self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12))
+            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, (0, 255, 0), pygame.Rect(pt.x + 4, pt.y + 4, 12, 12))
         
         pygame.draw.rect(self.display, RED, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
         # Draw grid lines
         for i in range(0, self.w, BLOCK_SIZE):
-            pygame.draw.line(self.display, WHITE, (i, 0), (i, self.h))
+            pygame.draw.line(self.display, (64, 64, 64), (i, 0), (i, self.h))
         for j in range(0, self.h, BLOCK_SIZE):
-            pygame.draw.line(self.display, WHITE, (0, j), (self.w, j))
+            pygame.draw.line(self.display, (64, 64, 64), (0, j), (self.w, j))
 
-        text = font.render("Score: " + str(self.score), True, WHITE)
+        # text = font.render("Score: " + str(self.score), True, WHITE)
+        text=font.render(f"Game Num: {self.game_num}  Score: {self.score}  High Score: {self.high_score}  Avg Score: {self.avg_score}", True, (255, 255, 255))
         self.display.blit(text, [0, 0])
         pygame.display.flip()
     
